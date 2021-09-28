@@ -286,7 +286,7 @@ class CatchAdmin
      */
     public static function getModuleRelativePath($path): string
     {
-        return Str::replace(dirname(config('catch.module.root')), '.', $path);
+        return Str::replaceFirst(dirname(config('catch.module.root')), '.', $path);
     }
 
     /**
