@@ -1,0 +1,44 @@
+{
+    "name": "jaguarjack/catchadmin-laravel",
+    "description": "catch-admin core for laravel",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "JaguarJack",
+            "email": "njphper@gmail.com",
+            "homepage": "https://jaguarjack.github.io/",
+            "role": "Developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^7.2|^8.0",
+        "tymon/jwt-auth": "dev-develop",
+        "maatwebsite/excel": "^3.1"
+    },
+    "homepage": "https://github.com/JaguarJack/catchadmin-laravel",
+    "support": {
+        "issues": "https://github.com/JaguarJack/catchadmin-laravel/issues",
+        "source": "https://github.com/JaguarJack/catchadmin-laravel"
+    },
+    "requeire-dev": {
+        "jaguarjack/file-generate": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Catcher\\": "src/"
+        }
+    },
+    "scripts": {
+        "post-package-install": [
+            "@php artisan vender:publish --tag=catch-config"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "\\Catcher\\Providers\\CatchAdminServiceProvider"
+            ]
+        }
+    }
+}
