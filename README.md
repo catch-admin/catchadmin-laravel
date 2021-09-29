@@ -23,6 +23,22 @@ catchadmin-laravel core project
 ## 项目地址
 - [github 地址](https://github.com/JaguarJack/catchadmin-laravel)
 - [前端 Vue 项目地址](https://github.com/yanwenwu/catch-admin-vue)
+
+
+- composer 安装
+```shell
+composer require jaguarjack/catchadmin-laravel
+```
+
+#### 安装
+下载完成之后通过命令来进行安装, 一键安装 🚀
+```shell
+ php artisan catch:install 
+```
+
+## 支持创作
+如果项目对你有帮助，可以订阅支持我❤️。你的每一份支持是对我最大的鼓励。开源不易，感谢支持。可以通过使用 [**🎉 爱发电**](https://afdian.net/@jaguarjack)订阅支持创作。
+
 ## 预览
 <table>
     <tr>
@@ -54,20 +70,6 @@ catchadmin-laravel core project
         <td><img src="https://s1.ax1x.com/2020/09/07/wuctcn.md.png"></td>
     </tr>
 </table>
-
-- composer 安装
-```shell
-composer require jaguarjack/catchadmin-laravel
-```
-
-#### 安装
-下载完成之后通过命令来进行安装, 一键安装 🚀
-```shell
- php artisan catch:install 
-```
-
-## 支持创作
-如果项目对你有帮助，可以订阅支持我❤️。你的每一份支持是对我最大的鼓励。开源不易，感谢支持。可以通过使用 [**🎉 爱发电**](https://afdian.net/@jaguarjack)订阅支持创作。
 
 ## 体验地址
 
