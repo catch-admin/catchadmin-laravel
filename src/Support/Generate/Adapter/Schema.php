@@ -39,6 +39,9 @@ class Schema extends Adapter
      */
     protected function columns(array $columns): array
     {
+        // 初始化 indexes 数组
+        $indexes = [];
+
         foreach ($columns as &$column) {
             $column['type'] = $this->typeToMigrationMethod($column['type']);
 
@@ -48,7 +51,7 @@ class Schema extends Adapter
 
             // 单独存储 index
             if ($column['index']) {
-                $this->indexes[$column['index']][] = $column['field'];
+                $indexes[$column['index']][] = $column['field'];
             }
 
             // 整形的默认为 0
@@ -58,6 +61,9 @@ class Schema extends Adapter
                 }
             }
         }
+
+        // 重新赋值给属性 indexes, 防止内存泄露
+        $this->indexes = $indexes;
 
         if ($this->origin['extra']['created_at']) {
             $columns[] = $this->extraColumns('created_at');

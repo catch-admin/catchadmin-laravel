@@ -47,21 +47,24 @@ class Generator
         try {
             $moduleName = $this->params['controller']['module'];
 
+            $files = [];
+
             if ($this->params['create_controller']) {
-                $this->files[] = (new CreateController)->setModule($moduleName)->generate($this->getControllerName());
+                $files[] = (new CreateController)->setModule($moduleName)->generate($this->getControllerName());
             }
             if ($this->params['create_table']) {
                 (new CreateSchema)->setParams($this->getSchemaParams())->generate($this->getSchemaName());
             }
 
             if ($this->params['create_model']) {
-                $this->files[] = (new CreateModel)->setModule($moduleName)->generate($this->getModelName());
+                $files[] = (new CreateModel)->setModule($moduleName)->generate($this->getModelName());
             }
 
             if ($this->params['create_migration']) {
-                $this->files[] = (new CreateMigration)->setModule($moduleName)->generate($this->getSchemaName());
+                // $files[] = (new CreateMigration)->setModule($moduleName)->generate($this->getSchemaName());
             }
 
+            $this->files = $files;
             // 创建对应路由
             (new CreateController)->setModule($moduleName)->generate($this->getControllerName());
         } catch (\Exception $e) {
