@@ -14,6 +14,7 @@ declare (strict_types = 1);
 namespace Catcher\Commands;
 
 use Catcher\CatchAdmin;
+use Catcher\Exceptions\FailedException;
 use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Foundation\Bootstrap\LoadConfiguration;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
@@ -30,7 +31,6 @@ class Install extends CatchCommand
      * @var string
      */
     protected $signature = 'catch:install {--root=catch}';
-
 
     protected $moduleRoot;
 
@@ -63,17 +63,18 @@ class Install extends CatchCommand
      */
     public function handle()
     {
+        // 获取 module root
         $this->moduleRoot = $this->option('root');
 
         try {
-            // 下载默认模块
-            $this->downloadDefaultModules();
-
             // 检查环境
             $this->detectEnvironment();
 
             // 发布配置
             $this->publishConfig();
+
+            // 下载默认模块
+            $this->downloadDefaultModules();
 
             // 创建数据库 以及表
             $this->createDatabase();
@@ -111,18 +112,32 @@ class Install extends CatchCommand
             }
         }
 
-       if (! File::exists(app()->environmentFilePath())) {
-           copy(app()->environmentFilePath() . '.example', app()->environmentFilePath());
-       }
+        $this->copyEnvFile();
+
+        $this->info('🎉 environment checking finished');
+    }
+
+
+    /**
+     * copy .env
+     *
+     * @time 2021年09月29日
+     * @return void
+     */
+    protected function copyEnvFile()
+    {
+        if (! File::exists(app()->environmentFilePath())) {
+            copy(app()->environmentFilePath() . '.example', app()->environmentFilePath());
+        }
 
         if (! File::exists(app()->environmentFilePath())) {
             $this->error('create 【.env】file failed, Please try again or you can create it by yourself');
             exit(0);
         }
 
-        $this->info('🎉 environment checking finished');
-    }
+        File::put(app()->environmentFile(), implode("\n", explode("\n", $this->getEnvFileContent())) . $this->defaultEnvConfig());
 
+    }
 
     /**
      * create database
@@ -216,10 +231,10 @@ class Install extends CatchCommand
         $env = '';
 
         foreach ([
-            'CATCH_ROOT' => $this->moduleRoot,
-            'CATCH_NAMESPACE' => $this->moduleRootNamespace,
-            'CATCH_GUARD' => 'catch_admin',
-            'CATCH_AUTH_MIDDLEWARE_ALIAS' => 'catch.auth'
+             'CATCH_ROOT' => $this->moduleRoot,
+             'CATCH_NAMESPACE' => $this->moduleRootNamespace,
+             'CATCH_GUARD' => 'catch_admin',
+             'CATCH_AUTH_MIDDLEWARE_ALIAS' => 'catch.auth'
         ] as $k => $value) {
             if (! Str::contains($envContent, $k)) {
                 $env .= sprintf('%s%s=%s', "\n", $k, $value);
@@ -241,6 +256,12 @@ class Install extends CatchCommand
         Artisan::call('catch:migrate', ['module' => 'Permissions']);
 
         Artisan::call('catch:db:seed', ['module' => 'Permissions']);
+
+        // 模块缓存
+        Artisan::call('catch:cache:modules');
+
+        // key:generate
+        Artisan::call('key:generate');
     }
 
     /**
@@ -294,8 +315,6 @@ class Install extends CatchCommand
             LoadEnvironmentVariables::class,
             LoadConfiguration::class
         ]);
-
-        Artisan::call('catch:cache:modules');
     }
 
 
@@ -326,13 +345,24 @@ class Install extends CatchCommand
      */
     protected function downloadDefaultModules()
     {
-        if (File::isDirectory(base_path($this->moduleRoot))) {
-           return;
+        try {
+            if (File::isDirectory(base_path($this->moduleRoot))) {
+                $this->addModuleNamespace();
+                return;
+            }
+
+            $this->exec(['git', 'clone', 'https://github.com/JaguarJack/catch-laravel-modules.git', $this->moduleRoot]);
+
+            if (! File::isDirectory(base_path($this->moduleRoot))) {
+                throw new FailedException('Download Catch-Module Failed, You sholud use [git clone https://github.com/JaguarJack/catch-laravel-modules.git catch] first, Then install!');
+            }
+
+            $this->addModuleNamespace();
+        } catch (\Throwable $e) {
+            $this->error($e->getMessage());
+
+            exit(0);
         }
-
-        $this->exec(['git', 'clone', 'https://github.com/JaguarJack/catch-laravel-modules.git', $this->moduleRoot]);
-
-        $this->addModuleNamespace();
     }
 
 
@@ -346,14 +376,14 @@ class Install extends CatchCommand
     {
         $composerFile = base_path() . DIRECTORY_SEPARATOR . 'composer.json';
 
-        $composerJson = json_decode(File::get($composerFile), true);
+        $composerJson = \json_decode(File::get($composerFile), true);
 
         $composerJson['autoload']['psr-4'][$this->moduleRootNamespace . '\\'] = $this->moduleRoot . '/';
 
         // close platform check
         $composerJson['config']['platform-check'] = false;
 
-        File::put($composerFile, json_encode($composerJson, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+        File::put($composerFile, \json_encode($composerJson, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
 
         $this->exec(['composer', 'dump-autoload']);
     }
