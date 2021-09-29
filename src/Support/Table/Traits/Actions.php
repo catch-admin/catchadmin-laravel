@@ -36,9 +36,13 @@ trait Actions
     public function actions($actions): self
     {
         if (is_array($actions)) {
+            $emptyActions = [];
+
             foreach ($actions as $action) {
-                $this->actions[] = $action();
+                $emptyActions[] = $action();
             }
+
+            $this->actions = $emptyActions;
         }
 
         if (is_callable($actions)) {

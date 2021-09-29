@@ -138,9 +138,13 @@ class CatchTable
      */
     public function excel(array $excel = []): self
     {
+        $emptyArr = [];
+
         foreach ($excel as $e) {
             $this->excel[] = $e->render();
         }
+
+        $this->excel = $emptyArr;
 
         return $this;
     }
