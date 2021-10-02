@@ -231,11 +231,11 @@ class Install extends CatchCommand
         $env = '';
 
         foreach ([
-             'CATCH_ROOT' => $this->moduleRoot,
-             'CATCH_NAMESPACE' => $this->moduleRootNamespace,
-             'CATCH_GUARD' => 'catch_admin',
-             'CATCH_AUTH_MIDDLEWARE_ALIAS' => 'catch.auth'
-        ] as $k => $value) {
+                     'CATCH_ROOT' => $this->moduleRoot,
+                     'CATCH_NAMESPACE' => $this->moduleRootNamespace,
+                     'CATCH_GUARD' => 'catch_admin',
+                     'CATCH_AUTH_MIDDLEWARE_ALIAS' => 'catch.auth'
+                 ] as $k => $value) {
             if (! Str::contains($envContent, $k)) {
                 $env .= sprintf('%s%s=%s', "\n", $k, $value);
             }
@@ -348,6 +348,7 @@ class Install extends CatchCommand
         try {
             if (File::isDirectory(base_path($this->moduleRoot))) {
                 $this->addModuleNamespace();
+
                 return;
             }
 
@@ -376,14 +377,14 @@ class Install extends CatchCommand
     {
         $composerFile = base_path() . DIRECTORY_SEPARATOR . 'composer.json';
 
-        $composerJson = \json_decode(File::get($composerFile), true);
+        $composerJson = json_decode(File::get($composerFile), true);
 
         $composerJson['autoload']['psr-4'][$this->moduleRootNamespace . '\\'] = $this->moduleRoot . '/';
 
         // close platform check
         $composerJson['config']['platform-check'] = false;
 
-        File::put($composerFile, \json_encode($composerJson, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+        File::put($composerFile, json_encode($composerJson, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
 
         $this->exec(['composer', 'dump-autoload']);
     }
