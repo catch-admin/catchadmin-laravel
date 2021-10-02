@@ -34,18 +34,18 @@ trait Header
      */
     public function headers(array $items, ...$hiddenHeadersProp): self
     {
-        // 在 fpm 的模式下，可以直接使用属性 $headers 进行填充
-        // 但是如果使用 Octane 的情况，属性 $headers 会不断增大
-        // 导致内存泄漏
-        // 这里初始化化一个空数组代替直接使用属性 $headers
+        // 在 fpm 的情况下，无需判断 Headers 是否为空的情况
+        // 但是如果使用 Octane 的情况，会重复执行，添加到数组内
+        // 会导致内存泄漏
+        // 这里初始化化一个空数组代替直接使用属性$headers
+
         $headers = [];
 
         foreach ($items as $item) {
-            $this->headers[] = $item();
+            $headers[] = $item();
         }
-
         foreach ($hiddenHeadersProp as $prop) {
-            $this->headers[] = $this->hidden('', $prop)();
+            $headers[] = $this->hidden('', $prop)();
         }
 
         $this->headers = $headers;

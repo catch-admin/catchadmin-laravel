@@ -280,35 +280,36 @@ trait Search
     {
         $hasCreatorField = array_search('creator', $fields);
 
+        if ($hasCreatorField) {
+            unset($fields[$hasCreatorField]);
+        }
+
         $model = $this->getModel()
-                      ->quickSearch()
-                      ->select($fields)
-                      ->when($hasCreatorField !== false, function ($query) use ($fields, $hasCreatorField){
-                            unset($fields[$hasCreatorField]);
+            ->quickSearch()
+            ->select($fields)
+            ->when($hasCreatorField !== false, function ($query) {
+                $userModel = app(config('auth.providers.admin_users.model'));
 
-                            $userModel = app(config('auth.providers.admin_users.model'));
-
-                            $query->select($fields)
-                                ->addSelect([
-                                'creator' => $userModel::whereColumn(
-                                    $this->getModel()->getTable() .'.creator_id',
-                                    $userModel->getTable() . '.id')
-                                    ->select('username')
-                                    ->take(1),
-                            ]);
-                      })
-                      // 数据权限
-                      ->when($this->dataRange, function ($query){
-                          $query->datarange();
-                      })
-                      // where 条件查询
-                      ->when($this->where, function ($query){
-                          call_user_func($this->where, $query);
-                      })
-                      // 排序
-                      ->when($this->sort, function ($query){
-                          call_user_func($this->sort, $query);
-                      });
+                $query->addSelect([
+                    'creator' => $userModel->whereColumn(
+                        $this->getModel()->getTable() .'.creator_id',
+                        $userModel->getTable() . '.id')
+                        ->select('username')
+                        ->take(1),
+                ]);
+            })
+            // 数据权限
+            ->when($this->dataRange, function ($query){
+                $query->datarange();
+            })
+            // where 条件查询
+            ->when($this->where, function ($query){
+                call_user_func($this->where, $query);
+            })
+            // 排序
+            ->when($this->sort, function ($query){
+                call_user_func($this->sort, $query);
+            });
 
         // deal with relations
         foreach ($relations as $relation => $columns) {
